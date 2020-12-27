@@ -80,7 +80,7 @@ if args.reports_to_run:
           print(f"id:{info['transaction_id']} note:{info['transaction_note']}")
 
 
-print("Have a nice day!")
+
 
 
 
