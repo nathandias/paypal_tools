@@ -27,37 +27,58 @@ base_url =  cfg[mode]['base_url']
 client_id = cfg[mode]['client_id']
 client_secret = cfg[mode]['client_secret']
 
-print(f'Base URL: {base_url}')
-print(f'Client ID: {client_id}')
-print(f'Client Secret: {client_secret}')
+def get_access_token(base_url, client_id, client_secret):
 
-# get access token
-auth_endpoint = base_url + "/v1/oauth2/token"
-headers = {
-    'Accept' : 'application/json',
-    'Accept-Language' : 'en_US',
+    print(f'Base URL: {base_url}')
+    print(f'Client ID: {client_id}')
+    print(f'Client Secret: {client_secret}')
+
+    # get access token
+    auth_endpoint = base_url + "/v1/oauth2/token"
+    headers = {
+        'Accept' : 'application/json',
+        'Accept-Language' : 'en_US',
+    }
+    data = {
+        'grant_type' : 'client_credentials'
+    }
+
+    response = requests.post(auth_endpoint, headers=headers, data=data, auth=(client_id, client_secret))
+
+    if response.status_code != 200:
+        sys.exit("Error: failed to get an access token / request returned something besides 200 OK")
+
+    json_data = response.json()
+    access_token = json_data['access_token']
+
+    print("Authorization request response:")
+    pprint(json_data)
+    pprint(access_token)
+
+    return access_token
 }
-data = {
-    'grant_type' : 'client_credentials'
-}
-
-response = requests.post(auth_endpoint, headers=headers, data=data, auth=(client_id, client_secret))
-
-if response.status_code != 200:
-    sys.exit("Error: failed to get an access token / request returned something besides 200 OK")
-
-json_data = response.json()
-access_token = json_data['access_token']
-
-print("Authorization request response:")
-pprint(json_data)
-pprint(access_token)
-
 transactions_endpoint = base_url + "/v1/reporting/transactions"
 headers = {
     'Content-Type' : 'application/json',
     'Authorization' : f'Bearer {access_token}',
 }
+
+def api_query(base_url, endpoint, access_token, verb='get', url_params={}):
+    
+    headers = {
+        'Content-Type' : 'application/json',
+        'Authorization' : f'Bearer {access_token}',
+    }
+
+    query_url = base_url + endpoint + "?"
+
+    f'{'
+
+
+    if verb == 'get': 
+        response = requests.get()
+
+
 
 try:
     response = requests.get(transactions_endpoint, headers=headers)
