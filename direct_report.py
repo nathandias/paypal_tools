@@ -107,21 +107,26 @@ def get_full_transaction_details(txn_id, start_date, end_date):
     except Exception as msg:
         sys.exit(msg)
 
-# def get_transactions(start_date, end_date):
-#     """
-#     Get all transactions in a specified date range
-#     """
+def get_transactions(start_date, end_date):
+    """
+    Get all transactions in a specified date range
+    """
 
-#     while start_date <= end_date:
-#         if (end_date - start_date) <= 31 days # last frame, do it and break the loop
-#             transactions = get_paged_transactions(start_date, end_date)
-#             # get all transaction pages from start_date to end_date and add the transactions to the list
-#             break
-#         else:
-#             # get all transactions from start_date to (start_date+31) and add to the transactions list
-#             # start_date = start_date + 31
-#     else:
-#         # input error: start_date > end_date
+    transactions = []
+
+    while start_date <= end_date:
+        if (end_date - start_date) <= timedelta(days=31):
+            # this is the final set of transactions to collect, so break
+            transactions += get_paged_transactions(start_date, end_date)
+            break
+        else:
+            start_plus_31 = start_date + timedelta(days=31)
+            transactions += get_paged_transactions(start_date, start_plus_31)
+            start_date = start_plus_31
+    else:
+        sys.exit("in get_transactions: start_date ({start_date}) > end_date ({end_date})")
+    
+    return transactions
 
 def get_paged_transactions(start_date, end_date):
 
@@ -142,7 +147,7 @@ def get_paged_transactions(start_date, end_date):
     endpoint += '&'.join(f'{i[0]}={i[1]}' for i in parameters.items()) # join the url parameters
 
     page = 1
-    pages = []
+    transactions = []
 
     query_url = endpoint + f'&page={page}'
 
@@ -152,7 +157,7 @@ def get_paged_transactions(start_date, end_date):
 
     #print("Results page", page, "of", total_pages)
     #pprint(results)
-    pages += results['transaction_details']
+    transactions += results['transaction_details']
 
     while (page < total_pages):
         page += 1
@@ -161,12 +166,12 @@ def get_paged_transactions(start_date, end_date):
         results = response.json()
         #print("Results page", page, "of", total_pages)
         #pprint(results)
-        pages += results['transaction_details']
+        transactions += results['transaction_details']
 
-    print("Number of transactions:", len(pages))
-    pprint(pages)
+    # print("Number of transactions:", len(pages))
+    # pprint(pages)
     
-    return pages
+    return transactions
 
 if (args.txn_id is not None): 
     capture_result = get_capture_details(args.txn_id)
@@ -174,12 +179,21 @@ if (args.txn_id is not None):
     transaction_result = get_full_transaction_details(args.txn_id, start_date, end_date)
 
 elif (args.start_date is not None) and (args.end_date is not None):
-    pass
-else: # return last 31 days of transactions default if no other options specified
+    start_date = datetime.strptime(args.start_date, "%Y-%m-%dT%H:%M:%S")
+    end_date = datetime.strptime(args.end_date, "%Y-%m-%dT%H:%M:%S")
+    if start_date > end_date:
+        sys.exit(f'start_date ({start_date}) is after end_date ({end_date})')
+
+    transactions = get_transactions(start_date, end_date)
+    pprint(transactions)
+    print("Number of transactions:", len(transactions))
+
+else: # return last 31 days of transactions, the default if no command line options specified
     end_date = datetime.today()
     start_date = end_date - timedelta(days=31)
-    get_paged_transactions(start_date, end_date)
-
+    transactions = get_paged_transactions(start_date, end_date)
+    pprint(transactions)
+    print("Number of transactions:", len(transactions))
 
 
 
