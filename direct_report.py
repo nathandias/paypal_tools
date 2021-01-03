@@ -178,7 +178,7 @@ elif (args.start_date is not None) and (args.end_date is not None):
 else: # return last 31 days of transactions default if no other options specified
     end_date = datetime.today()
     start_date = end_date - timedelta(days=31)
-    get_transaction_pages(start_date, end_date)
+    get_paged_transactions(start_date, end_date)
 
 
 
