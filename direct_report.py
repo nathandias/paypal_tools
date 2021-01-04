@@ -178,6 +178,7 @@ if (args.txn_id is not None):
     capture_result = get_capture_details(args.txn_id)
     start_date = end_date = capture_result['create_time']
     transaction_result = get_full_transaction_details(args.txn_id, start_date, end_date)
+    transactions = [transaction_result]
 
 elif (args.start_date is not None) and (args.end_date is not None):
     start_date = datetime.strptime(args.start_date, "%Y-%m-%dT%H:%M:%S")
@@ -186,19 +187,16 @@ elif (args.start_date is not None) and (args.end_date is not None):
         sys.exit(f'start_date ({start_date}) is after end_date ({end_date})')
 
     transactions = get_transactions(start_date, end_date)
-    pprint(transactions)
-    print("Number of transactions:", len(transactions))
 
 else: # return last 31 days of transactions, the default if no command line options specified
     end_date = datetime.today()
     start_date = end_date - timedelta(days=31)
     transactions = get_transactions(start_date, end_date)
-    pprint(transactions)
-    print("Number of transactions:", len(transactions))
 
-# if transactions is not None:
-#     data_frame = pd.read_json(transactions)
-#     pprint()
+if transactions is not None:
+    unpacked_t = [t['transaction_info'] for t in transactions]
+    df = pd.DataFrame(unpacked_t)
+    pprint(df)
 
 
 
