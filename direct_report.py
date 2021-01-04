@@ -5,6 +5,7 @@ from datetime import date, datetime, timedelta
 from pprint import pprint
 
 import requests
+import pandas as pd
 
 parser = argparse.ArgumentParser(description="Generate PayPal reports using the PayPal REST API (direct integration version, no SDK)")
 parser.add_argument('-m', '--server_mode', dest='mode', choices=('sandbox', 'live'), default='live')
@@ -191,9 +192,13 @@ elif (args.start_date is not None) and (args.end_date is not None):
 else: # return last 31 days of transactions, the default if no command line options specified
     end_date = datetime.today()
     start_date = end_date - timedelta(days=31)
-    transactions = get_paged_transactions(start_date, end_date)
+    transactions = get_transactions(start_date, end_date)
     pprint(transactions)
     print("Number of transactions:", len(transactions))
+
+# if transactions is not None:
+#     data_frame = pd.read_json(transactions)
+#     pprint()
 
 
 
